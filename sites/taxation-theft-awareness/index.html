@@ -1,0 +1,283 @@
+<html>
+	<head>
+		<title>Taxation is Theft?</title>
+		<link rel="icon" href="https://styles.redditmedia.com/t5_2uo3i/styles/communityIcon_ma82h8jyngu91.png"/>
+		<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+		<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js" integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy" crossorigin="anonymous"></script>
+	</head>
+	<body>
+		<style>
+			body, section, article, .input-area {
+				display: flex;
+				justify-content: center;
+				align-items: center;
+			}
+
+			body {
+				background: linear-gradient(to left top,
+					rgba(0,0,0,0.5) 49%,
+					rgba(0,0,0,0.5) 50%,
+					rgba(255,255,0,0.5) 50.1%,
+					rgba(255,255,0,0.5) 100%
+				), #000000;
+				flex-direction: row;
+			}
+
+			section, article {
+				flex-direction: column;
+			}
+
+			section {
+				padding: 2rem 4rem;
+				width: fit-content;
+				margin: 0 10%;
+				@media screen and (max-width: 400px) {
+					padding: 2rem 1rem;
+					margin: 0;
+					width: 100%;
+				}
+			}
+
+			#message-area {
+				width: 100%;
+				text-align: center;
+				padding: 2rem 0;
+			}
+
+			.alternative-area {
+				width: 100%;
+				flex-direction: row;
+				justify-content: space-between;
+				padding: 2rem 0;
+				flex-grow: 0.45;
+				@media screen and (max-width: 400px) {
+					flex-direction: column;
+					justify-content: center;
+				}
+
+				button {
+					flex-grow: 0.45;
+					@media screen and (max-width: 400px) {
+						width: 100%;
+						margin: 0.5rem 0;
+					}
+				}
+			}
+
+			.single-input {
+				flex-direction: column;
+				width: 100%;
+
+				button {
+					margin-top: 2rem;
+				}
+			}
+
+			.nothing {
+				display: none;
+			}
+
+			.disclaimer {
+				font-size: 0.9rem;
+				color: #595959;
+				cursor: pointer;
+				&:hover {
+					color: #222222;
+				}
+			}
+		</style>
+		<section class="card">
+			<article>
+				<h1 class="card-title" id="message-area">Enable Javascript to see the content.</h1>
+				<div class="input-area nothing" id="input-area">
+
+				</div>
+			</article>
+			<span class="disclaimer" onclick="refreshPage()">
+				Refresh the page to start again
+			</span>
+		</section>
+		<script>
+			const STEPS = {
+				INTRO: 'INTRO',
+				FINAL: 'FINAL',
+				WHAT_SERVICE: 'WHAT_SERVICE',
+				IS_IT_IMPORTANT: 'IS_IT_IMPORTANT',
+				JUSTIFY: 'JUSTIFY',
+				WOULD_PAY: 'WOULD_PAY',
+				NOT_IMPORTANT: 'NOT_IMPORTANT',
+				NOT_SO_IMPORTANT: 'NOT_SO_IMPORTANT',
+				REFUTED: 'REFUTED',
+			}
+
+			const initialStep = STEPS.INTRO;
+
+			const YES = 'yes';
+			const NO = 'no';
+
+			const CLASSES = {
+				ALTERNATIVE_AREA: 'alternative-area',
+				SINGLE_INPUT: 'single-input',
+				NONE: 'nothing',
+			}
+
+			var steps = new Map([
+				[
+					STEPS.INTRO,
+					{
+						getMessage: (args) => 'Is Taxation Theft?',
+						getInputArea: (args) => `
+							<button class="btn btn-primary" onclick="goToStep('${STEPS.FINAL}')">Yes</button>
+                        	<button class="btn btn-danger" onclick="goToStep('${STEPS.WHAT_SERVICE}')">No</button>
+						`,
+						getInputAreaClass: (args) => CLASSES.ALTERNATIVE_AREA,
+					},
+				],
+				[
+					STEPS.FINAL,
+					{
+						getMessage: (args) => 'Congratulations! You understood that taxation is theft.',
+						getInputArea: (args) => '',
+						getInputAreaClass: (args) => CLASSES.NONE,
+					}
+				],
+				[
+					STEPS.WHAT_SERVICE,
+					{
+						getMessage: (args) => 'Mention one service that you think the government needs to tax people in order to provide that.',
+						getInputArea: (args) => `
+							<input class="form-control" type="text" id="service" maxlength="150" required>
+							<div class="invalid-feedback">This field is required.</div>
+							<button class="btn btn-primary" onclick="handleResponse({ step: '${STEPS.WHAT_SERVICE}' })">Submit</button>
+						`,
+						getInputAreaClass: (args) => CLASSES.SINGLE_INPUT,
+					}
+				],
+				[
+					STEPS.IS_IT_IMPORTANT,
+					{
+						getMessage: (service) => `Is ${service} important?`,
+						getInputArea: (service) => `
+							<button class="btn btn-primary" onclick="goToStep('${STEPS.JUSTIFY}', '${service}')">Yes</button>
+                        	<button
+								class="btn btn-danger"
+								onclick="openTemporaryStep({ step: '${STEPS.NOT_IMPORTANT}', args: '${service}' }, { step: '${STEPS.INTRO}' }, 6000)"
+							>No</button>
+						`,
+						getInputAreaClass: (args) => CLASSES.ALTERNATIVE_AREA,
+					}
+				],
+				[
+					STEPS.NOT_IMPORTANT,
+					{
+						getMessage: (service) => `If ${service} is not important, the government shouldn't tax people to provide that.`,
+						getInputArea: () => '',
+						getInputAreaClass: () => CLASSES.NONE,
+					}
+				],
+				[
+					STEPS.JUSTIFY,
+					{
+						getMessage: (service) => `Why is ${service} important?`,
+						getInputArea: (service) => `
+							<textarea class="form-control" type="text" id="reason" required></textarea>
+							<div class="invalid-feedback">This field is required.</div>
+							<button class="btn btn-primary" onclick="handleResponse({ step: '${STEPS.JUSTIFY}', args: '${service}' })">Submit</button>
+						`,
+						getInputAreaClass: (args) => CLASSES.SINGLE_INPUT,
+					}
+				],
+				[
+					STEPS.WOULD_PAY,
+					{
+						getMessage: (service) => `Would you be willing to pay for ${service} if you were not forced to?`,
+						getInputArea: (service) => `
+							<button
+								class="btn btn-primary"
+								onclick="openTemporaryStep({ step: '${STEPS.REFUTED}', args: '${service}' }, { step: '${STEPS.INTRO}' }, 6000)"
+							>Yes</button>
+                        	<button
+								class="btn btn-danger"
+								onclick="openTemporaryStep({ step: '${STEPS.NOT_SO_IMPORTANT}', args: '${service}' }, { step: '${STEPS.IS_IT_IMPORTANT}', args: '${service}' }, 6000)"
+							>No</button>
+						`,
+						getInputAreaClass: (args) => CLASSES.ALTERNATIVE_AREA,
+					},
+				],
+				[
+					STEPS.REFUTED,
+					{
+						getMessage: (service) => `So people would pay for ${service} voluntarily. The government shouldn't tax people to provide that.`,
+						getInputArea: () => '',
+						getInputAreaClass: () => CLASSES.NONE,
+					}
+				],
+				[
+					STEPS.NOT_SO_IMPORTANT,
+					{
+						getMessage: (service) => `So ${service} doesn't look to be important, given that you wouldn't pay for that if you were not forced to.`,
+						getInputArea: () => '',
+						getInputAreaClass: () => CLASSES.NONE,
+					}
+				],
+			]);
+
+			function handleResponse(response) {
+				let input, answer;
+				switch (response.step) {
+					case STEPS.WHAT_SERVICE:
+						input = document.getElementById('service')
+						answer = input.value;
+						if (!answer) {
+							input.classList.add('is-invalid')
+							return;
+						}
+						goToStep(STEPS.IS_IT_IMPORTANT, answer);
+						break;
+					case STEPS.JUSTIFY:
+						input = document.getElementById('reason')
+						answer = input.value;
+						if (!answer) {
+							input.classList.add('is-invalid')
+							return;
+						}
+						goToStep(STEPS.WOULD_PAY, response.args);
+						break;
+				}
+			}
+
+			function openTemporaryStep(temporaryStepConfig, nextStepConfig, timeInMilliseconds) {
+				goToStep(temporaryStepConfig.step, temporaryStepConfig.args);
+				setTimeout(() => {
+					goToStep(nextStepConfig.step, nextStepConfig.args)
+				}, timeInMilliseconds);
+			}
+
+			function goToStep(step, args) {
+				setMessage(steps.get(step).getMessage(args));
+				setInputArea(steps.get(step).getInputArea(args));
+				setInputAreaClass(steps.get(step).getInputAreaClass(args));
+			}
+
+			function setMessage(message) {
+				document.getElementById('message-area').innerHTML = message;
+			}
+
+			function setInputArea(inputHTML) {
+				document.getElementById('input-area').innerHTML = inputHTML;
+			}
+
+			function setInputAreaClass(className) {
+				const inputArea = document.getElementById('input-area');
+				inputArea.classList.remove(...Object.values(CLASSES));
+				inputArea.classList.add(className);
+			}
+
+			function refreshPage() {
+				window.location = '';
+			}
+
+			goToStep(initialStep);
+		</script>
+	</body>
+</html>
